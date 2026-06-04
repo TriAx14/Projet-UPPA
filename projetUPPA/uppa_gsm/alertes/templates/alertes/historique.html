@@ -1,0 +1,99 @@
+{% extends 'alertes/base.html' %}
+{% block title %}Historique — UPPA GSM{% endblock %}
+{% block nav_historique %}active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>📋 Historique des alertes</h1>
+  <p>Toutes les alertes enregistrées</p>
+</div>
+
+<!-- FILTRES -->
+<div class="card" style="padding:1rem 1.5rem;">
+  <form method="get" style="display:flex; gap:1rem; align-items:flex-end; flex-wrap:wrap;">
+    <div class="form-group" style="margin:0; flex:1; min-width:150px;">
+      <label class="form-label">Capteur</label>
+      <select name="capteur" class="form-input">
+        <option value="">Tous</option>
+        {% for cle, cap in capteurs.items %}
+        <option value="{{ cle }}" {% if capteur_filtre == cle %}selected{% endif %}>{{ cap.nom }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group" style="margin:0; flex:1; min-width:150px;">
+      <label class="form-label">Statut</label>
+      <select name="statut" class="form-input">
+        <option value="">Tous</option>
+        <option value="active"  {% if statut_filtre == 'active'  %}selected{% endif %}>Active</option>
+        <option value="resolue" {% if statut_filtre == 'resolue' %}selected{% endif %}>Résolue</option>
+      </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Filtrer</button>
+    <a href="/historique/" class="btn" style="background:#2d3148; color:#94a3b8;">Réinitialiser</a>
+  </form>
+</div>
+
+<!-- TABLEAU -->
+<div class="card">
+  <table>
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Capteur</th>
+        <th>Température</th>
+        <th>Type d'alerte</th>
+        <th>Tentatives</th>
+        <th>Statut</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for alerte in alertes %}
+      <tr id="alerte-{{ alerte.id }}">
+        <td>{{ alerte.date_alerte|date:"d/m/Y H:i:s" }}</td>
+        <td><strong>{{ alerte.nom_capteur }}</strong></td>
+        <td style="font-weight:600; color:{% if alerte.temperature > 0 %}#ef4444{% else %}#7c8cf8{% endif %};">
+          {{ alerte.temperature }}°C
+        </td>
+        <td><span class="badge badge-warning">{{ alerte.type_alerte }}</span></td>
+        <td style="text-align:center;">{{ alerte.tentatives }}</td>
+        <td>
+          {% if alerte.statut == 'active' %}
+            <span class="badge badge-danger">Active</span>
+          {% else %}
+            <span class="badge badge-success">Résolue</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if alerte.statut == 'active' %}
+          <button onclick="resoudre({{ alerte.id }})"
+                  style="background:#2d3148; color:#94a3b8; border:none; padding:0.25rem 0.6rem; border-radius:6px; cursor:pointer; font-size:0.8rem;">
+            Résoudre
+          </button>
+          {% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="7" style="text-align:center; color:#64748b; padding:2rem;">
+          Aucune alerte trouvée
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function resoudre(id) {
+  fetch('/api/resoudre/' + id + '/', {
+    method: 'POST',
+    headers: {'X-CSRFToken': '{{ csrf_token }}'}
+  })
+  .then(r => r.json())
+  .then(data => { if (data.statut === 'ok') location.reload(); });
+}
+</script>
+{% endblock %}

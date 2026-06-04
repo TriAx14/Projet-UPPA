@@ -1,0 +1,31 @@
+{
+  "gsm": {
+    "numero_alerte": "+33600000000",
+    "port_serie": "/dev/serial0",
+    "baudrate": 9600,
+    "max_tentatives": 3,
+    "duree_appel": 20,
+    "delai_entre_tentatives": 30
+  },
+  "sim": {
+    "pin": "",
+    "operateur": "Syma Mobile (SFR 2G)",
+    "format": "Mini-SIM 2FF"
+  },
+  "surveillance": {
+    "intervalle_lecture": 30
+  },
+  "influxdb": {
+    "url": "http://localhost:8086",
+    "token": "ton_token_ici",
+    "org": "uppa",
+    "bucket": "alertes"
+  },
+  "capteurs": {
+    "frigo1": { "nom": "Réfrigérateur 1", "seuil_max": -60.0, "seuil_min": -200.0 },
+    "frigo2": { "nom": "Réfrigérateur 2", "seuil_max": -60.0, "seuil_min": -200.0 },
+    "frigo3": { "nom": "Réfrigérateur 3", "seuil_max": -60.0, "seuil_min": -200.0 },
+    "frigo4": { "nom": "Réfrigérateur 4", "seuil_max": -60.0, "seuil_min": -200.0 },
+    "ambiance": { "nom": "Température ambiante", "seuil_max": 25.0, "seuil_min": -10.0 }
+  }
+}

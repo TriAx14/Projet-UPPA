@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}UPPA GSM{% endblock %}</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0f1117;
+      color: #e2e8f0;
+      min-height: 100vh;
+    }
+
+    /* NAVBAR */
+    .navbar {
+      background: #1a1d27;
+      border-bottom: 1px solid #2d3148;
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 60px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .navbar-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: #7c8cf8;
+      text-decoration: none;
+    }
+    .navbar-brand span { color: #e2e8f0; }
+    .navbar-nav { display: flex; gap: 0.5rem; align-items: center; }
+    .nav-link {
+      color: #94a3b8;
+      text-decoration: none;
+      padding: 0.4rem 0.9rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+    .nav-link:hover, .nav-link.active {
+      background: #2d3148;
+      color: #e2e8f0;
+    }
+    .nav-user {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      font-size: 0.85rem;
+      color: #64748b;
+    }
+    .btn-logout {
+      background: #2d3148;
+      color: #94a3b8;
+      border: none;
+      padding: 0.35rem 0.8rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .btn-logout:hover { background: #ef4444; color: white; }
+
+    /* CONTENU */
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    /* CARDS */
+    .card {
+      background: #1a1d27;
+      border: 1px solid #2d3148;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .card-title {
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #64748b;
+      margin-bottom: 0.5rem;
+    }
+    .card-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #e2e8f0;
+    }
+
+    /* GRILLE */
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; }
+
+    /* BADGES */
+    .badge {
+      display: inline-block;
+      padding: 0.2rem 0.6rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .badge-danger  { background: rgba(239,68,68,0.15);  color: #ef4444; }
+    .badge-success { background: rgba(34,197,94,0.15);  color: #22c55e; }
+    .badge-warning { background: rgba(234,179,8,0.15);  color: #eab308; }
+    .badge-info    { background: rgba(124,140,248,0.15); color: #7c8cf8; }
+
+    /* TABLEAU */
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      text-align: left;
+      padding: 0.75rem 1rem;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #64748b;
+      border-bottom: 1px solid #2d3148;
+    }
+    td {
+      padding: 0.85rem 1rem;
+      border-bottom: 1px solid #1e2235;
+      font-size: 0.9rem;
+      color: #cbd5e1;
+    }
+    tr:hover td { background: #1e2235; }
+
+    /* BOUTONS */
+    .btn {
+      display: inline-block;
+      padding: 0.5rem 1.2rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .btn-primary { background: #7c8cf8; color: white; }
+    .btn-primary:hover { background: #6470e0; }
+    .btn-danger  { background: #ef4444; color: white; }
+    .btn-danger:hover  { background: #dc2626; }
+    .btn-success { background: #22c55e; color: white; }
+
+    /* STATUT GSM */
+    .status-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+      margin-right: 6px;
+    }
+    .status-active   { background: #22c55e; box-shadow: 0 0 8px #22c55e; }
+    .status-inactive { background: #ef4444; }
+    .status-unknown  { background: #eab308; }
+
+    /* FORMULAIRE */
+    .form-group { margin-bottom: 1rem; }
+    .form-label { display: block; font-size: 0.85rem; color: #94a3b8; margin-bottom: 0.4rem; }
+    .form-input {
+      width: 100%;
+      background: #0f1117;
+      border: 1px solid #2d3148;
+      border-radius: 8px;
+      padding: 0.6rem 0.9rem;
+      color: #e2e8f0;
+      font-size: 0.9rem;
+    }
+    .form-input:focus { outline: none; border-color: #7c8cf8; }
+
+    /* PAGE TITLE */
+    .page-header { margin-bottom: 2rem; }
+    .page-header h1 { font-size: 1.5rem; font-weight: 700; }
+    .page-header p  { color: #64748b; font-size: 0.9rem; margin-top: 0.3rem; }
+
+    /* ALERTE BANNER */
+    .alert-banner {
+      padding: 0.8rem 1.2rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+    }
+    .alert-success { background: rgba(34,197,94,0.1);  border: 1px solid rgba(34,197,94,0.3);  color: #22c55e; }
+    .alert-error   { background: rgba(239,68,68,0.1);  border: 1px solid rgba(239,68,68,0.3);  color: #ef4444; }
+
+    @media (max-width: 768px) {
+      .grid-4 { grid-template-columns: repeat(2, 1fr); }
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="navbar">
+  <a href="/dashboard/" class="navbar-brand">
+    📡 <span>UPPA</span> GSM Alertes
+  </a>
+  <div class="navbar-nav">
+    <a href="/dashboard/"     class="nav-link {% block nav_dashboard %}{% endblock %}">Dashboard</a>
+    <a href="/historique/"    class="nav-link {% block nav_historique %}{% endblock %}">Historique</a>
+    <a href="/configuration/" class="nav-link {% block nav_config %}{% endblock %}">Configuration</a>
+  </div>
+  <div class="nav-user">
+    👤 {{ request.user.username }}
+    <a href="/logout/" class="btn-logout">Déconnexion</a>
+  </div>
+</nav>
+
+<div class="container">
+  {% block content %}{% endblock %}
+</div>
+
+{% block scripts %}{% endblock %}
+</body>
+</html>

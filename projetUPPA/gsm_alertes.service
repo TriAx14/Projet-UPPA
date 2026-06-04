@@ -1,0 +1,49 @@
+# =============================================================
+#  SERVICE SYSTEMD — Module Alertes GSM
+#  Projet UPPA LFCR — BTS CIEL — Alexandre ALIAS
+# =============================================================
+#  Ce fichier permet au script gsm_alertes.py de démarrer
+#  automatiquement au boot du Raspberry Pi, et de redémarrer
+#  automatiquement en cas de crash.
+#
+#  Installation :
+#    sudo cp gsm_alertes.service /etc/systemd/system/
+#    sudo systemctl enable gsm_alertes
+#    sudo systemctl start gsm_alertes
+# =============================================================
+
+[Unit]
+# Description affichée dans les logs systemd
+Description=Module Alertes GSM — UPPA LFCR
+
+# Ce service démarre APRÈS que le réseau soit disponible
+# et APRÈS que le système multi-utilisateur soit prêt
+After=network.target multi-user.target
+
+[Service]
+# Type simple : le processus principal est le script Python lui-même
+Type=simple
+
+# Utilisateur qui exécute le script
+User=admin_uppa
+
+# Répertoire de travail (là où se trouvent gsm_alertes.py et config.json)
+WorkingDirectory=/home/admin_uppa
+
+# Commande de lancement du script
+ExecStart=/usr/bin/python3 /home/admin_uppa/gsm_alertes.py
+
+# Redémarrage automatique en cas de crash ou d'erreur
+# "on-failure" = redémarre uniquement si le script se termine avec une erreur
+Restart=on-failure
+
+# Délai avant redémarrage (évite les boucles de crash rapides)
+RestartSec=10s
+
+# Capture les logs stdout et stderr dans le journal systemd
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+# Démarre dans le target multi-utilisateur (boot normal)
+WantedBy=multi-user.target

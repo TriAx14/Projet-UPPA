@@ -1,0 +1,213 @@
+{% extends 'alertes/base.html' %}
+{% block title %}Dashboard — UPPA GSM{% endblock %}
+{% block nav_dashboard %}active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>📊 Dashboard</h1>
+  <p>Surveillance en temps réel — Laboratoire LFCR</p>
+</div>
+
+<!-- STATS -->
+<div class="grid-4" style="margin-bottom:1.5rem;">
+  <div class="card">
+    <div class="card-title">Alertes actives</div>
+    <div class="card-value" style="color:{% if alertes_actives > 0 %}#ef4444{% else %}#22c55e{% endif %}">
+      {{ alertes_actives }}
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Alertes 24h</div>
+    <div class="card-value" style="color:#eab308;">{{ alertes_24h }}</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Total alertes</div>
+    <div class="card-value">{{ total_alertes }}</div>
+  </div>
+  <div class="card">
+    <div class="card-title">Module GSM</div>
+    <div class="card-value" style="font-size:1.1rem; padding-top:0.4rem;">
+      {% if statut_gsm == 'active' %}
+        <span class="status-dot status-active"></span>
+        <span style="color:#22c55e;">Actif</span>
+      {% elif statut_gsm == 'inactive' %}
+        <span class="status-dot status-inactive"></span>
+        <span style="color:#ef4444;">Inactif</span>
+      {% else %}
+        <span class="status-dot status-unknown"></span>
+        <span style="color:#eab308;">Inconnu</span>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<div class="grid-2">
+
+  <!-- SEUILS CONFIGURÉS -->
+  <div class="card">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+      <h2 style="font-size:1rem; font-weight:600;">🌡️ Capteurs surveillés</h2>
+      <a href="/configuration/" class="btn btn-primary" style="font-size:0.8rem; padding:0.35rem 0.8rem;">Modifier</a>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Capteur</th>
+          <th>Seuil min</th>
+          <th>Seuil max</th>
+          <th>Statut</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for cle, cap in capteurs.items %}
+        <tr>
+          <td><strong>{{ cap.nom }}</strong></td>
+          <td>{{ cap.seuil_min }}°C</td>
+          <td>{{ cap.seuil_max }}°C</td>
+          <td>
+            {% if alertes_actives > 0 %}
+              <span class="badge badge-danger">⚠ Alerte</span>
+            {% else %}
+              <span class="badge badge-success">✓ Normal</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4" style="color:#64748b; text-align:center;">Aucun capteur configuré</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- INFOS GSM -->
+  <div class="card">
+    <h2 style="font-size:1rem; font-weight:600; margin-bottom:1rem;">📞 Module GSM</h2>
+    <div style="display:flex; flex-direction:column; gap:0.8rem;">
+      <div style="display:flex; justify-content:space-between; padding:0.7rem; background:#0f1117; border-radius:8px;">
+        <span style="color:#64748b; font-size:0.85rem;">Numéro d'alerte</span>
+        <span style="font-weight:600;">{{ numero_alerte }}</span>
+      </div>
+      <div style="display:flex; justify-content:space-between; padding:0.7rem; background:#0f1117; border-radius:8px;">
+        <span style="color:#64748b; font-size:0.85rem;">Tentatives max</span>
+        <span style="font-weight:600;">{{ config.gsm.max_tentatives }}</span>
+      </div>
+      <div style="display:flex; justify-content:space-between; padding:0.7rem; background:#0f1117; border-radius:8px;">
+        <span style="color:#64748b; font-size:0.85rem;">Durée appel</span>
+        <span style="font-weight:600;">{{ config.gsm.duree_appel }}s</span>
+      </div>
+      <div style="display:flex; justify-content:space-between; padding:0.7rem; background:#0f1117; border-radius:8px;">
+        <span style="color:#64748b; font-size:0.85rem;">Intervalle lecture</span>
+        <span style="font-weight:600;">{{ config.surveillance.intervalle_lecture }}s</span>
+      </div>
+    </div>
+
+    <!-- BOUTON TEST APPEL -->
+    <button onclick="testAppel()" class="btn btn-danger" style="width:100%; margin-top:1rem;">
+      📞 Tester un appel
+    </button>
+    <div id="test-result" style="margin-top:0.8rem; font-size:0.85rem; display:none;"></div>
+  </div>
+
+</div>
+
+<!-- DERNIÈRES ALERTES -->
+<div class="card">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+    <h2 style="font-size:1rem; font-weight:600;">🚨 Dernières alertes</h2>
+    <a href="/historique/" class="btn btn-primary" style="font-size:0.8rem; padding:0.35rem 0.8rem;">Voir tout</a>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Capteur</th>
+        <th>Température</th>
+        <th>Type</th>
+        <th>Tentatives</th>
+        <th>Statut</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for alerte in alertes_recentes %}
+      <tr id="alerte-{{ alerte.id }}">
+        <td>{{ alerte.date_alerte|date:"d/m/Y H:i" }}</td>
+        <td><strong>{{ alerte.nom_capteur }}</strong></td>
+        <td style="color:{% if alerte.temperature > 0 %}#ef4444{% else %}#7c8cf8{% endif %}; font-weight:600;">
+          {{ alerte.temperature }}°C
+        </td>
+        <td><span class="badge badge-warning">{{ alerte.type_alerte }}</span></td>
+        <td style="text-align:center;">{{ alerte.tentatives }}</td>
+        <td>
+          {% if alerte.statut == 'active' %}
+            <span class="badge badge-danger">Active</span>
+          {% else %}
+            <span class="badge badge-success">Résolue</span>
+          {% endif %}
+        </td>
+        <td>
+          {% if alerte.statut == 'active' %}
+          <button onclick="resoudre({{ alerte.id }})"
+                  style="background:#2d3148; color:#94a3b8; border:none; padding:0.25rem 0.6rem; border-radius:6px; cursor:pointer; font-size:0.8rem;">
+            Résoudre
+          </button>
+          {% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="7" style="text-align:center; color:#64748b; padding:2rem;">
+          ✅ Aucune alerte enregistrée
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Rafraîchissement automatique toutes les 30 secondes
+setTimeout(() => location.reload(), 30000);
+
+// Test appel GSM
+function testAppel() {
+  const btn = event.target;
+  const result = document.getElementById('test-result');
+  btn.disabled = true;
+  btn.textContent = '⏳ Appel en cours...';
+  result.style.display = 'none';
+
+  fetch('/test-appel/', {
+    method: 'POST',
+    headers: {'X-CSRFToken': '{{ csrf_token }}'}
+  })
+  .then(r => r.json())
+  .then(data => {
+    result.style.display = 'block';
+    if (data.statut === 'ok') {
+      result.style.color = '#22c55e';
+      result.textContent = '✅ ' + data.message;
+    } else {
+      result.style.color = '#ef4444';
+      result.textContent = '❌ ' + data.message;
+    }
+    btn.disabled = false;
+    btn.textContent = '📞 Tester un appel';
+  });
+}
+
+// Résoudre une alerte
+function resoudre(id) {
+  fetch('/api/resoudre/' + id + '/', {
+    method: 'POST',
+    headers: {'X-CSRFToken': '{{ csrf_token }}'}
+  })
+  .then(r => r.json())
+  .then(data => {
+    if (data.statut === 'ok') location.reload();
+  });
+}
+</script>
+{% endblock %}

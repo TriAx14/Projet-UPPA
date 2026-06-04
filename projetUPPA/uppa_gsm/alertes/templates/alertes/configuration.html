@@ -1,0 +1,67 @@
+{% extends 'alertes/base.html' %}
+{% block title %}Configuration — UPPA GSM{% endblock %}
+{% block nav_config %}active{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>⚙️ Configuration</h1>
+  <p>Modifier les seuils et paramètres GSM</p>
+</div>
+
+{% if message %}
+<div class="alert-banner alert-{{ message.0 }}">
+  {{ message.1 }}
+</div>
+{% endif %}
+
+<form method="post">
+  {% csrf_token %}
+
+  <!-- NUMÉRO D'ALERTE -->
+  <div class="card">
+    <h2 style="font-size:1rem; font-weight:600; margin-bottom:1rem;">📞 Numéro d'alerte</h2>
+    <div class="form-group">
+      <label class="form-label">Numéro de téléphone (format international)</label>
+      <input type="text" name="numero_alerte" class="form-input"
+             value="{{ config.gsm.numero_alerte }}"
+             placeholder="+33600000000" style="max-width:300px;">
+    </div>
+  </div>
+
+  <!-- SEUILS PAR CAPTEUR -->
+  <div class="card">
+    <h2 style="font-size:1rem; font-weight:600; margin-bottom:1rem;">🌡️ Seuils d'alarme</h2>
+    <p style="color:#64748b; font-size:0.85rem; margin-bottom:1.2rem;">
+      Selon le CDC : réfrigérateurs critiques à -60°C, ambiance critique à +25°C
+    </p>
+    <table>
+      <thead>
+        <tr>
+          <th>Capteur</th>
+          <th>Seuil minimum (°C)</th>
+          <th>Seuil maximum (°C)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for cle, cap in capteurs.items %}
+        <tr>
+          <td><strong>{{ cap.nom }}</strong><br><span style="color:#64748b; font-size:0.8rem;">{{ cle }}</span></td>
+          <td>
+            <input type="number" name="seuil_min_{{ cle }}" class="form-input"
+                   value="{{ cap.seuil_min }}" step="0.5"
+                   style="width:150px;">
+          </td>
+          <td>
+            <input type="number" name="seuil_max_{{ cle }}" class="form-input"
+                   value="{{ cap.seuil_max }}" step="0.5"
+                   style="width:150px;">
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <button type="submit" class="btn btn-primary">💾 Sauvegarder la configuration</button>
+</form>
+{% endblock %}
