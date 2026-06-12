@@ -1,0 +1,82 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "Congélateurs (Cible : -80°C)",
+      "gridPos": { "x": 0, "y": 0, "w": 14, "h": 8 },
+      "datasource": { "type": "influxdb", "uid": "bfmu9c3w4s2kgc" },
+      "targets": [
+        {
+          "query": "from(bucket: \"UPPA-TEMP\") |> range(start: v.timeRangeStart, stop: v.timeRangeStop) |> filter(fn: (r) => r[\"_measurement\"] == \"mesures\") |> filter(fn: (r) => r[\"_field\"] == \"valeur\") |> filter(fn: (r) => r[\"sonde\"] =~ /^congelateur/) |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false) |> yield(name: \"mean\")",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull", "min", "max"] }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "celsius",
+          "thresholds": { "mode": "absolute", "steps": [ { "value": null, "color": "green" }, { "value": -60, "color": "red" } ] },
+          "custom": { "drawStyle": "line", "lineWidth": 2, "thresholdsStyle": { "mode": "line" } }
+        }
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Pièce Climatisée",
+      "gridPos": { "x": 14, "y": 0, "w": 10, "h": 8 },
+      "datasource": { "type": "influxdb", "uid": "bfmu9c3w4s2kgc" },
+      "targets": [
+        {
+          "query": "from(bucket: \"UPPA-TEMP\") |> range(start: v.timeRangeStart, stop: v.timeRangeStop) |> filter(fn: (r) => r[\"_measurement\"] == \"mesures\") |> filter(fn: (r) => r[\"_field\"] == \"valeur\") |> filter(fn: (r) => r[\"sonde\"] == \"ambiante\") |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false) |> yield(name: \"mean\")",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["lastNotNull", "min", "max"] }
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "celsius",
+          "thresholds": { "mode": "absolute", "steps": [ { "value": null, "color": "green" }, { "value": 25, "color": "red" } ] },
+          "custom": { "drawStyle": "line", "lineWidth": 2, "thresholdsStyle": { "mode": "line" } }
+        }
+      }
+    },
+    {
+      "type": "alertlist",
+      "title": "Dashboard des alertes",
+      "gridPos": { "x": 0, "y": 8, "w": 24, "h": 7 },
+      "options": {
+        "showInactiveAlerts": true,
+        "stateFilter": { "error": true, "firing": true, "pending": true, "recovering": true },
+        "viewMode": "list"
+      }
+    }
+  ],
+  "refresh": "1m",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["UPPA"],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-24h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Surveillance Températures - UPPA V2",
+  "uid": "uppa-v2-final",
+  "version": 1
+}
